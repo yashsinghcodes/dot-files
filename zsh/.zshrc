@@ -33,18 +33,18 @@ function zle-keymap-select {
   elif [[ ${KEYMAP} == main ]] ||
        [[ ${KEYMAP} == viins ]] ||
        [[ ${KEYMAP} = '' ]] ||
-       [[ $1 = 'beam' ]]; then
-    echo -ne '\e[5 q'
+       [[ $1 = 'block' ]]; then
+    echo -ne '\e[1 q'
   fi
 }
 zle -N zle-keymap-select
 zle-line-init() {
     zle -K viins # initiate `vi insert` as keymap (can be removed if `bindkey -V` has been set elsewhere)
-    echo -ne "\e[5 q"
+    echo -ne "\e[1 q"
 }
 zle -N zle-line-init
-echo -ne '\e[5 q' # Use beam shape cursor on startup.
-preexec() { echo -ne '\e[5 q' ;} # Use beam shape cursor for each new prompt.
+echo -ne '\e[1 q' # Use beam shape cursor on startup.
+preexec() { echo -ne '\e[1 q' ;} # Use beam shape cursor for each new prompt.
 
 # Use lf to switch directories and bind it to ctrl-o
 lfcd () {
@@ -68,4 +68,40 @@ bindkey '^e' edit-command-line
 
 # Load zsh-syntax-highlighting; should be last.
 source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh 2>/dev/null
-eval "$(starship init zsh)"
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+# The next line updates PATH for the Google Cloud SDK.
+if [ -f '/home/darksoul/configs/google-cloud-sdk/path.zsh.inc' ]; then . '/home/darksoul/configs/google-cloud-sdk/path.zsh.inc'; fi
+
+# The next line enables shell command completion for gcloud.
+if [ -f '/home/darksoul/configs/google-cloud-sdk/completion.zsh.inc' ]; then . '/home/darksoul/configs/google-cloud-sdk/completion.zsh.inc'; fi
+
+
+# History
+HISTFILE=~/.zsh_history
+HISTSIZE=10000
+SAVEHIST=10000
+setopt SHARE_HISTORY
+
+
+# GET MY IP
+MYIP=$(ifconfig | grep 'inet '| grep -v '127.0.0.1' | tail -1 | cut -d: -f2 | awk '{ print $2}')
+
+# Shuffle ENV
+export GOOGLE_APPLICATION_CREDENTIALS=/home/darksoul/code/shaffuru/backend/gcp_creds_frankfurt.json
+export SHUFFLE_GCEPROJECT=shuffle-europe-west3
+export SHUFFLE_GCE_LOCATION=europe-west3
+export SHUFFLE_PUBLIC_BUCKET=shuffle_sandbox_public
+export PORT=5002
+export SHUFFLE_SWARM_CONFIG=run
+export SHUFFLE_LOGS_DISABLED=true
+export SHUFFLE_WORKER_IMAGE=ghcr.io/shuffle/shuffle-worker-scale-source:nightly
+export BASE_URL=http://$MYIP:5002
+export SHUFFLE_WORKER_SERVER_URL=http://$MYIP:33333
+export PATH=~/bin/flutter/bin:~/go/bin:/opt/tenzir/bin:$PATH
+
+alias aoc='/home/darksoul/fun/aoc2024/new.sh'
+[[ "$TERM" == "xterm-kitty" ]] && alias ssh="TERM=xterm-256color ssh"
